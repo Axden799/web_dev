@@ -1,9 +1,13 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 
+dotenv.config(); // apply the config from the .env file using dotenv that contains server and database information
+
 const app = express();
+const PORT = process.env.PORT || 3000; // in case the env file cannot be loaded, default to using port 5001
 
 app.use(express.json()); // extract data from database as JSON to parse in our app
 app.use(cors()); //  Middleware to enable Cross-Origin Resource Sharing. This is essential for your frontend (running on a different port/origin) to communicate with your backend.
@@ -17,6 +21,6 @@ app.get("/test", (req, res) => {
     res.send("Hello, from the test route!");
 });
 
-app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+app.listen(PORT, () => {
+    console.log("Server is running on port " + PORT);
 });
