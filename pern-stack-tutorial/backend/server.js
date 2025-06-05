@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import productRoutes from "./routes/productRoutes.js";
+
 dotenv.config(); // apply the config from the .env file using dotenv that contains server and database information
 
 const app = express();
@@ -15,11 +17,7 @@ app.use(helmet()) // helmet is a security middleware that helps you protect your
 app.use(morgan("dev")) // log the requests to the console GET /test 200 1.955 ms - 27 and GET /favicon.ico 404 0.711 ms - 150
 // if we hard refresh CTRL + SHIFT + R, we will get response 200 (OK). If we simply refresh, we will get response 304, (OK from cache)
 
-
-app.get("/test", (req, res) => {
-    console.log(res.getHeaders());
-    res.send("Hello, from the test route!");
-});
+app.use("/api/products", productRoutes); // the route /api/products will use the routes from the productRoutes.js file
 
 app.listen(PORT, () => {
     console.log("Server is running on port " + PORT);
