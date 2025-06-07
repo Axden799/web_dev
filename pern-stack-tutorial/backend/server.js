@@ -6,6 +6,7 @@ import morgan from "morgan";
 
 import productRoutes from "./routes/productRoutes.js";
 import { sql } from "./config/db.js";
+import { aj } from "./lib/arcjet.js";
 
 dotenv.config(); // apply the config from the .env file using dotenv that contains server and database information
 
@@ -17,6 +18,38 @@ app.use(cors()); //  Middleware to enable Cross-Origin Resource Sharing. This is
 app.use(helmet()) // helmet is a security middleware that helps you protect your app by setting various HTTP headers
 app.use(morgan("dev")) // log the requests to the console GET /test 200 1.955 ms - 27 and GET /favicon.ico 404 0.711 ms - 150
 // if we hard refresh CTRL + SHIFT + R, we will get response 200 (OK). If we simply refresh, we will get response 304, (OK from cache)
+
+// apply Arcjet rate-limit to all routes
+
+app.use(async (req, res, next) => {
+    try {
+        const decision = await aj.protect(req, {
+            requested: 1 // specifies that each request consumes 1 token
+        })
+
+        if (decision.isDenied()) {
+            if (decision.reason.isRateLimit()) {
+                res.status(429).json({ error: "Too many requests" });
+            } else if (decision.reason.isBot()) {
+                res.status(403).json({error: "Bot access denied" });
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
+            return
+        }
+
+        // check for spoofed bots
+        if (decision.results.some((result) => result.reason.isBot() && result.reason.isSpoofed())) {
+            res.status(403).json({ error: "Spoofed bot detected" });
+            return;
+        }
+
+        next();
+    } catch (error) {
+        console.log("Arcjet error", error);
+        next(error);
+    }
+})
 
 app.use("/api/products", productRoutes); // the route /api/products will use the routes from the productRoutes.js file
 
