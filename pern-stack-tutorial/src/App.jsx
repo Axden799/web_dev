@@ -1,14 +1,23 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import NavBar from "./components/NavBar";
+import HomePage from "./pages/HomePage";
+import ProductPage from "./pages/ProductPage";
+
+import { Routes, Route } from "react-router-dom";
+
 
 function App() {
 
   return (
-    <>
-      <div>
-        <h1 className="text-red-500">Hey</h1>
+      <div className="min-h-screen bg-base-200 transition-colors duration-300" data-theme="cupcake">
+        <NavBar />
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/product/:id" element={<ProductPage />} />
+        </Routes>
       </div>
-    </>
-  )
+  );
 }
 
-export default App
+export default App;
